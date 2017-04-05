@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gcp-rover
+  name: gcp-rover
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: gcp-rover
+      name: gcp-rover
+    spec:
+      containers:
+        - name: gcp-rover
+          image: "gcr.io/sec-ops-162220/gcp-rover:0.0.1" 
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 100M
+            requests:
+              cpu: 500m
+              memory: 50M

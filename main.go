@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 
 	"cloud.google.com/go/compute/metadata"
 )
@@ -15,6 +16,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 type MetadataResponse struct {
 	ProjectID        string
 	NumericProjectID string
+	Hostname         string
 }
 
 func metadataHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +26,9 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := &MetadataResponse{}
-	v, _ := metadata.ProjectID()
+	v, _ := os.Hostname()
+	response.Hostname = v
+	v, _ = metadata.ProjectID()
 	response.ProjectID = v
 	v, _ = metadata.NumericProjectID()
 	response.NumericProjectID = v
