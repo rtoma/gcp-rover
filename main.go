@@ -23,9 +23,9 @@ type MetadataResponse struct {
 	InstanceID         string
 	InstanceName       string
 	Zone               string
-	InstanceAttributes []string
+	InstanceAttributes map[string]string
 	InstanceTags       []string
-	ProjectAttributes  []string
+	ProjectAttributes  map[string]string
 	Scopes             []string
 }
 
@@ -35,7 +35,10 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := &MetadataResponse{}
+	response := &MetadataResponse{
+		InstanceAttributes: make(map[string]string),
+		ProjectAttributes:  make(map[string]string),
+	}
 
 	v, _ := os.Hostname()
 	response.SysHostname = v
@@ -65,13 +68,21 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 	response.Zone = v
 
 	vs, _ := metadata.InstanceAttributes()
-	response.InstanceAttributes = vs
+	for _, attr := range vs {
+		if val, err := metadata.InstanceAttributeValue(attr); err == nil {
+			response.InstanceAttributes[attr] = val
+		}
+	}
 
 	vs, _ = metadata.InstanceTags()
 	response.InstanceTags = vs
 
 	vs, _ = metadata.ProjectAttributes()
-	response.ProjectAttributes = vs
+	for _, attr := range vs {
+		if val, err := metadata.ProjectAttributeValue(attr); err == nil {
+			response.ProjectAttributes[attr] = val
+		}
+	}
 
 	vs, _ = metadata.Scopes("default")
 	response.Scopes = vs
