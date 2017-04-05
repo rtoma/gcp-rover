@@ -1,6 +1,6 @@
 ---
 steps:
 - name: 'gcr.io/cloud-builders/golang-project'
-  args: ['gcp-rover', '--tag=gcr.io/$PROJECT_ID/gcp-rover']
+  args: ['gcp-rover', '--tag=gcr.io/$PROJECT_ID/gcp-rover:$TAG_NAME']
 
-images: ['gcr.io/$PROJECT_ID/gcp-rover']
+images: ['gcr.io/$PROJECT_ID/gcp-rover:$TAG_NAME']
