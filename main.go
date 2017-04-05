@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"os"
 
 	"cloud.google.com/go/compute/metadata"
@@ -27,6 +28,16 @@ type MetadataResponse struct {
 	InstanceTags       []string
 	ProjectAttributes  map[string]string
 	Scopes             []string
+}
+
+func inspectHandler(w http.ResponseWriter, r *http.Request) {
+	dump, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(dump)
+
 }
 
 func metadataHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,5 +111,6 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", helloHandler)
 	http.HandleFunc("/metadata", metadataHandler)
+	http.HandleFunc("/inspect", inspectHandler)
 	http.ListenAndServe(":8000", nil)
 }
