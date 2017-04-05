@@ -1,5 +1,4 @@
-// main.go
-package main
+package main // import "gcp-rover"
 
 import (
 	"fmt"
