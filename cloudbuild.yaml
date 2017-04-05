@@ -1,13 +1,6 @@
 ---
 steps:
-- name: 'gcr.io/cloud-builders/go'
-  args: ['test', './...']
-- name: 'gcr.io/cloud-builders/go'
-  args: ['install', 'gcp-rover']
-  id: 'go-install'
-
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/gcp-rover', '.']
-  waitFor: ['go-install']
+- name: 'gcr.io/cloud-builders/golang-project'
+  args: ['gcp-rover', '--tag=gcr.io/$PROJECT_ID/gcp-rover']
 
 images: ['gcr.io/$PROJECT_ID/gcp-rover']
