@@ -14,3 +14,6 @@ spec:
   selector:
     app: gcp-rover
   type: LoadBalancer
+  loadBalancerSourceRanges:
+    - '83.87.224.9/32'      # home
+    - '91.195.1.33/32'      # office
