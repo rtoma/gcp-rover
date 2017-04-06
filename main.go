@@ -161,7 +161,7 @@ func main() {
 		if traceClient, err = trace.NewClient(ctx, projectId); err != nil {
 			log.Fatalf("cant create trace client: %s", err)
 		}
-		log.Printf("enabled tracing")
+		log.Printf("enabled tracing, projectid: %s", projectId)
 	} else {
 		log.Print("cant enable tracing, no metadata available (not in gce?)")
 	}
