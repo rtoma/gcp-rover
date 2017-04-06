@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strings"
 
 	"cloud.google.com/go/compute/metadata"
+	"cloud.google.com/go/trace"
+	"cloud.google.com/go/trace/traceutil"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +35,8 @@ type MetadataResponse struct {
 	Scopes             []string
 }
 
+var traceClient *trace.Client
+
 func inspectHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("Request from %s\n\n", r.RemoteAddr)))
 
@@ -41,6 +46,10 @@ func inspectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(dump)
+}
+
+func envHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Environment:\n\n%s", html.EscapeString(strings.Join(os.Environ(), "\n")))
 }
 
 func curlHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +65,9 @@ URL: <input type="text" name="url" size="80">
 </html>`)
 		return
 	}
-	resp, err := http.Get(url)
+	hc := traceutil.NewHTTPClient(traceClient, nil)
+	req, _ := http.NewRequest("GET", url, nil)
+	resp, err := hc.Do(req)
 	if err != nil {
 		fmt.Fprintf(w, "GET failed: %s", err)
 		return
@@ -140,9 +151,12 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", helloHandler)
-	http.HandleFunc("/metadata", metadataHandler)
-	http.HandleFunc("/inspect", inspectHandler)
-	http.HandleFunc("/curl", curlHandler)
+
+	//	traceClient = trace.NewClient()
+	http.Handle("/", traceutil.HTTPHandler(traceClient, helloHandler))
+	http.Handle("/metadata", traceutil.HTTPHandler(traceClient, metadataHandler))
+	http.Handle("/inspect", traceutil.HTTPHandler(traceClient, inspectHandler))
+	http.Handle("/curl", traceutil.HTTPHandler(traceClient, curlHandler))
+	http.Handle("/env", traceutil.HTTPHandler(traceClient, envHandler))
 	http.ListenAndServe(":8000", nil)
 }
