@@ -55,6 +55,9 @@ func envHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func curlHandler(w http.ResponseWriter, r *http.Request) {
+	span := traceClient.SpanFromRequest(r)
+	defer span.Finish()
+
 	url := r.PostFormValue("url")
 
 	if url == "" {
@@ -68,13 +71,16 @@ URL: <input type="text" name="url" size="80">
 		return
 	}
 
-	span := traceClient.SpanFromRequest(r)
-	defer span.Finish()
 	span.SetLabel("custom/url", url)
 
 	hc := traceutil.NewHTTPClient(traceClient, nil)
 	req, _ := http.NewRequest("GET", url, nil)
+
+	r_span := span.NewRemoteChild(req)
+
 	resp, err := hc.Do(req)
+	r_span.Finish(trace.WithResponse(resp))
+
 	if err != nil {
 		fmt.Fprintf(w, "GET failed: %s", err)
 		return
