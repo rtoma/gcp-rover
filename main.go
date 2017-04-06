@@ -67,6 +67,11 @@ URL: <input type="text" name="url" size="80">
 </html>`)
 		return
 	}
+
+	span := traceClient.NewSpan("curl")
+	defer span.Finish()
+	span.SetLabel("custom/url", url)
+
 	hc := traceutil.NewHTTPClient(traceClient, nil)
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, err := hc.Do(req)
