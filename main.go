@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/trace"
 	"cloud.google.com/go/trace/traceutil"
+	"golang.org/x/net/context"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
@@ -152,7 +154,20 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	//	traceClient = trace.NewClient()
+	log.Print("starting")
+
+	ctx := context.Background()
+	if projectId, err := metadata.ProjectID(); err == nil {
+		if traceClient, err = trace.NewClient(ctx, projectId); err != nil {
+			log.Fatalf("cant create trace client: %s", err)
+		}
+		log.Printf("enabled tracing")
+	} else {
+		log.Print("cant enable tracing, no metadata available (not in gce?)")
+	}
+
+	log.Print("start serving")
+
 	http.Handle("/", traceutil.HTTPHandler(traceClient, helloHandler))
 	http.Handle("/metadata", traceutil.HTTPHandler(traceClient, metadataHandler))
 	http.Handle("/inspect", traceutil.HTTPHandler(traceClient, inspectHandler))
