@@ -68,7 +68,7 @@ URL: <input type="text" name="url" size="80">
 		return
 	}
 
-	span := traceClient.NewSpan("curl")
+	span := traceClient.SpanFromRequest(r)
 	defer span.Finish()
 	span.SetLabel("custom/url", url)
 
